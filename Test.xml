@@ -1,0 +1,51 @@
+<Simulation start="0" duration="3600" lambda_init="100" increment="0.001" c_lambda="10" random_seed="2418446980">
+
+    <ExchangeAgent
+        name="EXCHANGE"
+        algorithm="PriceTime"
+        tradeoutputFile="trade/trade.csv"
+    />
+
+    <SetupAgent         
+        name="Setup_Agent_1"      
+        exchange="EXCHANGE"               
+
+        setupTime="0.000001"
+        bidVolume="10"
+        askVolume="10"
+        bidPrice="7514.9"
+        askPrice="7516.1"
+    />
+
+    <Generator count="125">
+        <LiquidityProvider
+            name="Liquidity_Provider"
+            exchange="EXCHANGE"
+
+            delta="0.025"
+            frequency="0.15"
+        />
+    </Generator>
+
+    <Generator count="125">
+        <LiquidityTaker
+            name="Liquidity_Taker"
+            exchange="EXCHANGE"
+
+            frequency="0.025"
+        />
+    </Generator>
+
+    <L1LogAgent
+        name="L1_LOGGER"
+        exchange="EXCHANGE"
+        outputFile="log/test_LL_log.csv"
+    />
+
+    <OrderLogAgent
+        exchange="EXCHANGE"
+        name="Order_Log_Agent"
+        outputFile="LOB/test_LL.csv"
+    />
+
+</Simulation>
