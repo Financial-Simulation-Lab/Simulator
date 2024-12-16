@@ -77,20 +77,3 @@ std::string LimitOrder::printCSV() const {
 
 	return this->Order::printCSV() + ",LMT," + m_price.toFullString() + "\n";
 }
-
-
-// k_level Market Order in A-share
-KlevelMarketOrder::KlevelMarketOrder(OrderID id, OrderDirection direction,Timestamp timestamp, Volume volume, int k_level)
-	: Order(id, direction, timestamp, volume), k_level(k_level) {
-}
-
-std::string KlevelMarketOrder::printCSV() const {
-	return this->Order::printCSV() + ",MKT" + std::to_string(k_level) + "\n";
-}
-
-void KlevelMarketOrder::printHuman() const {
-	this->Order::printHuman();
-
-	std::cout << "\tMKT\t" << std::to_string(k_level) << std::endl;
-}
-

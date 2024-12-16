@@ -40,7 +40,6 @@ public:
 
 	MarketOrderPtr placeMarketOrder(OrderDirection direction, Timestamp timestamp, Volume volume);
 	LimitOrderPtr placeLimitOrder(OrderDirection direction, Timestamp timestamp, Volume volume, Money price);
-	KlevelMarketOrderPtr placeKlevelMarketOrder(OrderDirection direction, Timestamp timestamp, Volume volume, Level level);
 	void cancelOrder(const OrderID orderId);
 	Volume cancelOrder(const OrderID orderId, Volume volumeToCancel);
 
@@ -63,7 +62,6 @@ public:
 protected:
 	void placeOrder(const MarketOrderPtr& order);
 	void placeOrder(const LimitOrderPtr& order);
-	void placeOrder(const KlevelMarketOrderPtr& order);
 
 	void registerLimitOrder(const LimitOrderPtr& order);
 	void unregisterLimitOrder(const LimitOrderPtr& order);
@@ -76,11 +74,6 @@ protected:
 
 	virtual void processAgainstTheBuyQueue(const OrderPtr& order, Money minPrice) = 0; // you want to keep it this way
 	virtual void processAgainstTheSellQueue(const OrderPtr& order, Money maxPrice) = 0;
-
-	virtual void processAgainstTheBuyQueue(const LimitOrderPtr& order, Money minPrice) {}
-	virtual void processAgainstTheSellQueue(const LimitOrderPtr& order, Money minPrice) {}
-	virtual void processAgainstTheBuyQueue(const KlevelMarketOrderPtr& order, Money minPrice) {}
-	virtual void processAgainstTheSellQueue(const KlevelMarketOrderPtr& order, Money maxPrice) {}
 
 	void logTrade(OrderDirection direction, OrderID aggressorId, OrderID restingId, Volume volume, Money execPrice);
 private:

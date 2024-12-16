@@ -2,6 +2,8 @@
 
 #include "Agent.h"
 
+#include <fstream>
+
 class TradeLogAgent : public Agent {
 public:
 	TradeLogAgent(const Simulation* simulation);
@@ -12,5 +14,8 @@ public:
 	// Inherited via Agent
 	void receiveMessage(const MessagePtr& msg) override;
 private:
+	void logHead();
+
 	std::string m_exchange;
+	std::ofstream m_outputFile;
 };

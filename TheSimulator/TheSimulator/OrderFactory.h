@@ -23,10 +23,6 @@ public:
 	MarketOrderPtr marketSell(Timestamp timestamp, Volume volume);
 	LimitOrderPtr limitBuy(Timestamp timestamp, Volume volume, Money price);
 	LimitOrderPtr limitSell(Timestamp timestamp, Volume volume, Money price);
-
-	// K_level
-	KlevelMarketOrderPtr makeKlevelMarketOrder(OrderDirection direction, Timestamp timestamp, Volume volume, Level k_level);
-
 private:
 	OrderID m_orderCount;
 };

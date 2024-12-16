@@ -6,7 +6,6 @@
 #include "Agent.h"
 #include "IConfigurable.h"
 #include "ParameterStorage.h"
-#include "Volume.h"
 
 #include <string>
 #include <queue>
@@ -14,6 +13,7 @@
 #include <memory>
 
 #include <random>
+#include <iostream>
 
 #include <pybind11/embed.h>
 namespace py = pybind11;
@@ -55,10 +55,12 @@ public:
 
 	SimulationState state() const { return m_state; }
 	Timestamp currentTimestamp() const { return m_currentTimestamp; }
-	Timestamp durationTimestamp() const { return m_durationTimestamp; }
 	ParameterStorage& parameters() const { return *m_parameters; }
 
 	std::mt19937 & randomGenerator() const { return *m_randomGenerator; };
+
+	// mutable int k = 0;
+	// std::mt19937 & randomGenerator() const { this->k++;return *m_randomGenerator; };
 
 	// Inherited via IMessageable
 	virtual void receiveMessage(const MessagePtr& msg) override;
@@ -69,10 +71,6 @@ public:
 	// only for Liquidity agent
 	double q_taker(int time_step) const {return q_taker_list[time_step]; }
 	double lambda_t(int time_step) const {return lambda_t_list[time_step]; }
-
-	// only for Fundamental agent
-	double fundamental_price(int time_step) const {return m_fundamentalPrice[time_step];}
-	void add_volume(int time_step, Volume volume) const {m_volume[time_step] += volume;}
 
 private:
 	SimulationState m_state;
@@ -101,11 +99,4 @@ private:
 	double m_lambda_init = 100;
 	double m_increment = 0.001;
 	double m_c_lambda = 10;
-
-	// only for Fundamental agent
-	std::vector<double> m_fundamentalPrice;
-	double m_priceShift;
-	double m_startPrice;
-
-	mutable int m_volume[3600];
 };

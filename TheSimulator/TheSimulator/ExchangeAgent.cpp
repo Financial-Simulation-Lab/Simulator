@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
-#include <fstream>
 
 #include <iostream>
 
@@ -24,9 +23,7 @@ void ExchangeAgent::receiveMessage(const MessagePtr& msg) {
 	if (msg->type == "PLACE_ORDER_MARKET") {
 		auto ptr = std::dynamic_pointer_cast<PlaceOrderMarketPayload>(msg->payload);
 		auto mop = m_bookPtr->placeMarketOrder(ptr->direction, msg->arrival, ptr->volume);
-		// add volume
-		simulation()->add_volume(int(simulation()->currentTimestamp()), ptr->volume - mop->volume());
-		// end
+		
 		PlaceOrderMarketResponsePayload retpay(mop->id(), ptr);
 		auto retpayptr = std::make_shared<PlaceOrderMarketResponsePayload>(retpay);
 
@@ -36,14 +33,12 @@ void ExchangeAgent::receiveMessage(const MessagePtr& msg) {
 	} else if (msg->type == "PLACE_ORDER_LIMIT") {
 		auto ptr = std::dynamic_pointer_cast<PlaceOrderLimitPayload>(msg->payload);
 		auto lop = m_bookPtr->placeLimitOrder(ptr->direction, msg->arrival, ptr->volume, ptr->price);
-		// add volume
-		simulation()->add_volume(int(simulation()->currentTimestamp()), ptr->volume - lop->volume());
-		// end
+
 		PlaceOrderLimitResponsePayload retpay(lop->id(), ptr);
 		auto retpayptr = std::make_shared<PlaceOrderLimitResponsePayload>(retpay);
 
 		respondToMessage(msg, retpayptr, m_processingDelay);
-		
+
 		notifyLimitOrderSubscribers(lop);
 	} else if (msg->type == "RETRIEVE_ORDERS") {
 		auto pptr = std::dynamic_pointer_cast<RetrieveOrdersPayload>(msg->payload);
@@ -180,14 +175,6 @@ void ExchangeAgent::receiveMessage(const MessagePtr& msg) {
 			auto sretpptr = std::make_shared<SuccessResponsePayload>("Agent subscribed to trade events for order " + std::to_string(pptr->id) + ":" + msg->source);
 			fastRespondToMessage(msg, sretpptr);
 		}
-	} else if (msg->type == "PLACE_Klevel_ORDER_MARKET") {
-		auto ptr = std::dynamic_pointer_cast<PlaceKlevelOrderMarketPayload>(msg->payload);
-		auto lop = m_bookPtr->placeKlevelMarketOrder(ptr->direction, msg->arrival, ptr->volume, ptr->level);
-
-		PlaceKlevelOrderMarketResponsePayload retpay(lop->id(), ptr);
-		auto retpayptr = std::make_shared<PlaceKlevelOrderMarketResponsePayload>(retpay);
-
-		respondToMessage(msg, retpayptr, m_processingDelay);
 	} else {
 		auto retpptr = std::make_shared<ErrorResponsePayload>("Unrecognized request type: " + msg->type);
 
@@ -201,7 +188,6 @@ void ExchangeAgent::receiveMessage(const MessagePtr& msg) {
 #include "TimeProRataBook.h"
 #include "SimulationException.h"
 #include "ParameterStorage.h"
-#include "AshareBook.h"
 
 void ExchangeAgent::configure(const pugi::xml_node& node, const std::string& configurationPath) {
 	Agent::configure(node, configurationPath);
@@ -225,9 +211,6 @@ void ExchangeAgent::configure(const pugi::xml_node& node, const std::string& con
 		} else if (algorithm == "TimeProRata") {
 			m_bookPtr = std::make_shared<TimeProRataBook>(orderFactoryPtr, tradeFactoryPtr);
 			m_bookPtr->registerTradeLoggingCallback(loggingCallbackBound);
-		} else if (algorithm == "Ashare") {
-			m_bookPtr = std::make_shared<AshareBook>(orderFactoryPtr, tradeFactoryPtr);
-			m_bookPtr->registerTradeLoggingCallback(loggingCallbackBound);
 		} else {
 			throw SimulationException("ExchangeAgent::configure(): unknown algorithm '" + algorithm + "'");
 		}
@@ -236,11 +219,6 @@ void ExchangeAgent::configure(const pugi::xml_node& node, const std::string& con
 	if (!(att = node.attribute("processingDelay")).empty()) {
 		std::string pd = simulation()->parameters().processString(att.as_string());
 		m_processingDelay = std::stoull(pd);
-	}
-
-	if (!(att = node.attribute("tradeoutputFile")).empty()) {
-		m_outputFile.open(simulation()->parameters().processString(att.as_string()));
-		m_outputFile << "id,time,valume,price" << std::endl;
 	}
 }
 
@@ -271,12 +249,6 @@ void ExchangeAgent::notifyTradeSubscribers(TradePtr tradePtr) {
 
 	notifyTradeSubscribersByOrderID(tradePtr, tradePtr->aggressingOrderID());
 	notifyTradeSubscribersByOrderID(tradePtr, tradePtr->restingOrderID());
-
-
-	m_outputFile << std::to_string(tradePtr->id()) + ","
-		+ std::to_string(tradePtr->timestamp()) + ","
-		+ std::to_string(tradePtr->volume()) + ","
-		+ tradePtr->price().toFullString() << std::endl;
 }
 
 void ExchangeAgent::notifyTradeSubscribersByOrderID(TradePtr tradePtr, OrderID orderId) {

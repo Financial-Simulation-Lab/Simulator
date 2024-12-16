@@ -5,7 +5,6 @@
 
 #include <list>
 #include <map>
-#include <fstream>
 
 class ExchangeAgent : public Agent {
 public:
@@ -33,5 +32,4 @@ private:
 	void notifyTradeSubscribersByOrderID(TradePtr tradePtr, OrderID orderId);
 
 	int cnt = 0;
-	std::ofstream m_outputFile;
 };

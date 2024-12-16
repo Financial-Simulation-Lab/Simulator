@@ -11,7 +11,6 @@
 #include <string>
 
 using OrderID = unsigned long int;
-using Level = int;
 constexpr OrderID ORDERID_INVALID = 0;
 
 enum class OrderDirection : unsigned int {
@@ -95,23 +94,3 @@ private:
 	const Money m_price;
  };
 using LimitOrderPtr = std::shared_ptr<LimitOrder>;
-
-// k_level Market Order in A-share
-class KlevelMarketOrder : public Order {
-public:
-	KlevelMarketOrder(const KlevelMarketOrder& order) = default;
-	KlevelMarketOrder(KlevelMarketOrder&& order) = default;
-
-	inline Level K_level() const {return k_level;}
-	inline void decreaseLevel() {k_level--;}
-
-	void printHuman() const override;
-	std::string printCSV() const override;
-protected:
-	KlevelMarketOrder(OrderID id, OrderDirection direction, Timestamp timestamp, Volume volume, int k_level);
-
-	friend class OrderFactory;
-private:
-	Level k_level;
-};
-using KlevelMarketOrderPtr = std::shared_ptr<KlevelMarketOrder>;

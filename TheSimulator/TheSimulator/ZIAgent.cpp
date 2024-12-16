@@ -5,9 +5,6 @@
 #include "ExchangeAgentMessagePayloads.h"
 #include "ParameterStorage.h"
 
-#include <random>
-#include <cmath>
-
 ZIAgent::ZIAgent(const Simulation* simulation)
 	: Agent(simulation), m_exchange(""), m_halfSpread(0.01), m_volumeUnit(1), m_marketOrderFraction(0.0), m_orderDirection(0.0), m_timeStep(1), m_orderMeanLifeTime(1e9) {}
 
@@ -59,7 +56,7 @@ void ZIAgent::receiveMessage(const MessagePtr& msg) {
 		
 		std::bernoulli_distribution orderTypeDistribution(m_marketOrderFraction);
 		std::bernoulli_distribution orderDirectionDistribution(m_orderDirection);
-		std::exponential_distribution<> orderVolumnDistribution(1 / m_volumeUnit);
+		std::exponential_distribution orderVolumnDistribution(1 / m_volumeUnit);
 
 		bool isMarketOrder = orderTypeDistribution(simulation()->randomGenerator());
 		OrderDirection direction = orderDirectionDistribution(simulation()->randomGenerator()) ? OrderDirection::Buy : OrderDirection::Sell;
@@ -70,7 +67,7 @@ void ZIAgent::receiveMessage(const MessagePtr& msg) {
 			simulation()->dispatchMessage(currentTimestamp, 0, this->name(), m_exchange, "PLACE_ORDER_MARKET", pptr);
 		}
 		else {
-			std::exponential_distribution<> orderSpreadDistribution(1 / m_halfSpread);
+			std::exponential_distribution orderSpreadDistribution(1 / m_halfSpread);
 			Money orderSpread = orderSpreadDistribution(simulation()->randomGenerator());
 			const auto inCents = orderSpread.floorToCents();
 
@@ -102,7 +99,7 @@ void ZIAgent::receiveMessage(const MessagePtr& msg) {
 
 void ZIAgent::scheduleMarketMaking() {
 	const Timestamp currentTimestamp = simulation()->currentTimestamp();
-	std::exponential_distribution<> orderDelayDistribution(1.0 / m_timeStep);
+	std::exponential_distribution orderDelayDistribution(1.0 / m_timeStep);
 	Timestamp delay = (Timestamp)orderDelayDistribution(simulation()->randomGenerator());
 
 	simulation()->dispatchMessage(currentTimestamp, delay, this->name(), this->name(), "WAKEUP_FOR_MARKETMAKING", std::make_shared<EmptyPayload>());

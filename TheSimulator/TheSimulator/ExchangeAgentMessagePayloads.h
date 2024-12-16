@@ -126,21 +126,3 @@ struct EventTradePayload : public MessagePayload {
 
 	EventTradePayload(const Trade& trade) : trade(trade) { }
 };
-
-struct PlaceKlevelOrderMarketPayload : public MessagePayload {
-	OrderDirection direction;
-	Volume volume;
-	Level level;
-
-	PlaceKlevelOrderMarketPayload(OrderDirection direction, Volume volume, Level level) : direction(direction), volume(volume), level(level) { }
-};
-
-
-
-struct PlaceKlevelOrderMarketResponsePayload : public MessagePayload {
-	OrderID id;
-	std::shared_ptr<PlaceKlevelOrderMarketPayload> requestPayload;
-
-	PlaceKlevelOrderMarketResponsePayload(OrderID id, const std::shared_ptr<PlaceKlevelOrderMarketPayload>& requestPayload)
-		: id(id), requestPayload(requestPayload) { }
-};

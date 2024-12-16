@@ -14,8 +14,6 @@
 #include "ZIAgent.h"
 #include "LiquidityProvider.h"
 #include "LiquidityTaker.h"
-#include "TestAgent.h"
-#include "MarketMaker.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -70,7 +68,7 @@ void Simulation::deliverMessage(const MessagePtr& messagePtr) {
     
 	for (const std::string& target : messagePtr->targets) {
 	    
-	   	// std::cout << "Target: " << target << std::endl;
+	   // std::cout << "Target: " << target << std::endl;
 	    
 		if (target == "*") {
 			receiveMessage(messagePtr);
@@ -151,17 +149,15 @@ void Simulation::start() {
 			q_taker += q_taker < 0.5 ? -m_increment : m_increment;
 		}
 	}
-	// end
 
-	// only for Fundamental agent
-	// m_fundamentalPrice.push_back(m_startPrice);
-	// for (int i = 0; i < m_durationTimestamp; ++i) {
-	// 	std::bernoulli_distribution meanReversionDistribution(0.5);
-	// 	double adjust_price = meanReversionDistribution(simulation()->randomGenerator()) ? m_priceShift : -m_priceShift;
-	// 	m_fundamentalPrice.push_back(m_fundamentalPrice.back() + adjust_price);
-	// }
+	// std::cout << q_taker_list.size() << std::endl;
+	// for(auto ele: q_taker_list)
+	// 	std::cout << ele << " ";
+	// std::cout << std::endl;
+	// for(auto ele: lambda_t_list)
+	// 	std::cout << ele << " ";
+	// std::cout << std::endl;
 
-	// memset(m_volume, 0, sizeof(m_volume));
 	// end
 
 	this->dispatchMessage(m_startTimestamp, 0, "SIMULATION", "*", "EVENT_SIMULATION_START", nullptr);
@@ -178,9 +174,7 @@ void Simulation::step(Timestamp step) {
 
 	Timestamp topMessageTimestamp;
 	while (!m_messageQueue->empty() && (topMessageTimestamp = m_messageQueue->top()->arrival) < cutoff) {
-
-		std::cout << "msg type " << m_messageQueue->top()->type << std::endl;
-
+	   
 	    cnt++;
 	    if(cnt % 1000000 == 0){
 	        std::cout << "Already process " << cnt << " messages at time " << topMessageTimestamp << std::endl;
@@ -202,6 +196,7 @@ void Simulation::step(Timestamp step) {
 	}
 
 	std::cout << "Finally " << cnt << " messages were processed!" <<std::endl;
+
 }
 
 void Simulation::stop() {
@@ -212,7 +207,7 @@ void Simulation::setupChildConfiguration(const pugi::xml_node& node, const std::
 	for (pugi::xml_node_iterator nit = node.begin(); nit != node.end(); ++nit) {
 	    
 	    // Print the initialization state
-	    // std::cout << nit->name() << " " << configurationPath << std::endl;
+	   // std::cout << nit->name() << " " << configurationPath << std::endl;
 	    
 		std::string nodeName = nit->name();
 		if (nodeName == "Generator") {
@@ -285,14 +280,6 @@ void Simulation::setupChildConfiguration(const pugi::xml_node& node, const std::
 			auto eaptr = std::make_unique<LiquidityTaker>(this);
 			eaptr->configure(*nit, configurationPath);
 			m_agentList.push_back(std::move(eaptr));
-		} else if (nodeName == "TestAgent") {
-			auto eaptr = std::make_unique<TestAgent>(this);
-			eaptr->configure(*nit, configurationPath);
-			m_agentList.push_back(std::move(eaptr));
-		} else if (nodeName == "MarketMaker") {
-			auto eaptr = std::make_unique<MarketMaker>(this);
-			eaptr->configure(*nit, configurationPath);
-			m_agentList.push_back(std::move(eaptr));
 		} else {
 			pugi::xml_attribute att = node.attribute("file");
 			if (!att.empty()) {
@@ -355,14 +342,6 @@ void Simulation::configure(const pugi::xml_node& node, const std::string& config
 
 	if (!(att = node.attribute("c_lambda")).empty()) {
 		m_c_lambda = att.as_double();
-	}
-
-	if (!(att = node.attribute("priceShift")).empty()) {
-		m_priceShift = att.as_double();
-	}
-
-	if (!(att = node.attribute("startPrice")).empty()) {
-		m_startPrice = att.as_double();
 	}
 
 	if (!(att = node.attribute("random_seed")).empty()) {

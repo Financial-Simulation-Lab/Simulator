@@ -43,13 +43,4 @@ LimitOrderPtr OrderFactory::limitSell(Timestamp timestamp, Volume volume, Money 
 	return makeLimitOrder(OrderDirection::Sell, timestamp, volume, price);
 }
 
-// K_level
-KlevelMarketOrderPtr OrderFactory::makeKlevelMarketOrder(OrderDirection direction, Timestamp timestamp, Volume volume, Level k_level = -1){
-	++m_orderCount;
-
-	KlevelMarketOrderPtr op = KlevelMarketOrderPtr(new KlevelMarketOrder(m_orderCount, direction, timestamp, volume, k_level));
-
-	return op;
-};
-
 #include <iostream>

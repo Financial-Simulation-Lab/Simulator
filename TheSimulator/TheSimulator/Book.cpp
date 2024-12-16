@@ -9,9 +9,6 @@ Book::Book(OrderFactoryPtr orderRecordPtr, TradeFactoryPtr tradeRecordPtr)
 void Book::placeOrder(const LimitOrderPtr& order) {
 	if (order->direction() == OrderDirection::Sell) {
 		if (m_buyQueue.empty() || order->price() > this->m_buyQueue.back().price()) {
-
-			std::cout << "No Trade" << std::endl;
-
 			auto firstGreaterThan = m_sellQueue.end();
 			for (auto it = m_sellQueue.begin(); it != m_sellQueue.end(); ++it) {
 				if (it->price() >= order->price()) {
@@ -32,13 +29,7 @@ void Book::placeOrder(const LimitOrderPtr& order) {
 				m_lastBetteringSellOrder = order;
 			}
 		} else {
-
-			std::cout << "Trade" << std::endl;
-
 			processAgainstTheBuyQueue(order, order->price());
-
-			std::cout << "order price " << order->price().toCentString() << " order volume " << order->volume() << std::endl;
-			std::cout << "buy queue price " << this->m_buyQueue.back().price().toCentString() << std::endl;
 
 			if (order->volume() > 0) {
 				this->placeOrder(order);
@@ -46,9 +37,6 @@ void Book::placeOrder(const LimitOrderPtr& order) {
 		}
 	} else {
 		if (m_sellQueue.empty() || order->price() < this->m_sellQueue.front().price()) {
-
-			std::cout << "No Trade" << std::endl;
-
 			auto firstLessThan = m_buyQueue.rend();
 			for (auto rit = m_buyQueue.rbegin(); rit != m_buyQueue.rend(); ++rit) {
 				if (rit->price() <= order->price()) {
@@ -69,13 +57,7 @@ void Book::placeOrder(const LimitOrderPtr& order) {
 				m_lastBetteringBuyOrder = order;
 			}
 		} else {
-
-			std::cout << "Trade" << std::endl;
-
 			processAgainstTheSellQueue(order, order->price());
-
-			std::cout << "order price " << order->price().toCentString() << " order volume " << order->volume() << std::endl;
-			std::cout << "sell queue price " << this->m_buyQueue.back().price().toCentString() << std::endl;
 
 			if (order->volume() > 0) {
 				this->placeOrder(order);
@@ -102,24 +84,6 @@ void Book::placeOrder(const MarketOrderPtr& order) {
 	}
 }
 
-void Book::placeOrder(const KlevelMarketOrderPtr& order) {
-	if (order->direction() == OrderDirection::Sell) {
-		if(!m_buyQueue.empty()) {
-			processAgainstTheBuyQueue(order, -1e9); // don't ask
-		} else {
-			// auto p = placeLimitOrder(OrderDirection::Sell, order->timestamp(), order->volume(), m_lastBetteringSellOrder->price());  // we need setup agents to guarantee this is sensible
-			// I think that the above line was only introduced to deal with the zero intelligence simulations. I do now strongly believe this case should be a no-op.
-		}
-	} else {
-		if (!m_sellQueue.empty()) {
-			processAgainstTheSellQueue(order, 1e9); // assuming nothing trades at 1BN per lot
-		} else {
-			// auto p = placeLimitOrder(OrderDirection::Buy, order->timestamp(), order->volume(), m_lastBetteringBuyOrder->price()); // we need setup agents to guarantee this is sensible
-			// I think that the above line was only introduced to deal with the zero intelligence simulations. I do now strongly believe this case should be a no-op.
-		}
-	}
-}
-
 MarketOrderPtr Book::placeMarketOrder(OrderDirection direction, Timestamp timestamp, Volume volume) {
 	auto ret = m_orderRecordPtr->makeMarketOrder(direction, timestamp, volume);
 	placeOrder(ret);
@@ -129,13 +93,6 @@ MarketOrderPtr Book::placeMarketOrder(OrderDirection direction, Timestamp timest
 
 LimitOrderPtr Book::placeLimitOrder(OrderDirection direction, Timestamp timestamp, Volume volume, Money price) {
 	auto ret = m_orderRecordPtr->makeLimitOrder(direction, timestamp, volume, price);
-	placeOrder(ret);
-
-	return ret;
-}
-
-KlevelMarketOrderPtr Book::placeKlevelMarketOrder(OrderDirection direction, Timestamp timestamp, Volume volume, Level level) {
-	auto ret = m_orderRecordPtr->makeKlevelMarketOrder(direction, timestamp, volume, level);
 	placeOrder(ret);
 
 	return ret;
@@ -189,8 +146,6 @@ void Book::printHuman() const {
 
 std::string Book::printCSV() const {
 	this->printCSV(5);
-
-	return NULL;
 }
 
 void Book::printHuman(unsigned int depth) const {
@@ -214,7 +169,6 @@ std::string Book::printCSV(unsigned int depth) const {
 	dumpCSVLOB(m_buyQueue.crbegin(), m_buyQueue.crend(), depth);
 	std::cout << std::endl;
 
-	return NULL;
 }
 
 void Book::registerLimitOrder(const LimitOrderPtr& order) {

@@ -15,15 +15,22 @@ void TradeLogAgent::receiveMessage(const MessagePtr& messagePtr) {
 	const Timestamp currentTimestamp = simulation()->currentTimestamp();
 	
 	if (messagePtr->type == "EVENT_SIMULATION_START") {
+		logHead();
 		simulation()->dispatchMessage(currentTimestamp, currentTimestamp, name(), m_exchange, "SUBSCRIBE_EVENT_TRADE", std::make_shared<EmptyPayload>());
 	} else if (messagePtr->type == "EVENT_TRADE") {
 		auto pptr = std::dynamic_pointer_cast<EventTradePayload>(messagePtr->payload);
 		const auto& trade = pptr->trade;
 		
-		std::cout << name() << ": ";
-		trade.printHuman();
-		std::cout << std::endl;
+		// std::cout << name() << ": ";
+		// trade.printHuman();
+		// std::cout << std::endl;
+
+		m_outputFile << trade.printCSV() << std::endl;
 	}
+}
+
+void TradeLogAgent::logHead() {
+	m_outputFile << "id,time,aggressingOrderID,direction,restingOrderID,volume,price" << std::endl;
 }
 
 #include "ParameterStorage.h"
@@ -34,5 +41,9 @@ void TradeLogAgent::configure(const pugi::xml_node& node, const std::string& con
 	pugi::xml_attribute att;
 	if (!(att = node.attribute("exchange")).empty()) {
 		m_exchange = simulation()->parameters().processString(att.as_string());
+	}
+
+	if (!(att = node.attribute("outputFile")).empty()) {
+		m_outputFile.open(simulation()->parameters().processString(att.as_string()));
 	}
 }
