@@ -2,6 +2,7 @@
 
 #include "Agent.h"
 #include "Book.h"
+#include "Money.h"
 
 #include <list>
 #include <map>
@@ -32,4 +33,5 @@ private:
 	void notifyTradeSubscribersByOrderID(TradePtr tradePtr, OrderID orderId);
 
 	int cnt = 0;
+	Money last_ask = 0, last_bid = 0;
 };

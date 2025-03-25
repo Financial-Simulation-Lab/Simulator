@@ -68,7 +68,7 @@ void ExchangeAgent::receiveMessage(const MessagePtr& msg) {
 		auto retpptr = std::make_shared<RetrieveL1ResponsePayload>();
 		retpptr->time = simulation()->currentTimestamp();
 		if (m_bookPtr->sellQueue().empty()) {
-			retpptr->bestAskPrice = 0;
+			retpptr->bestAskPrice = last_ask;
 			retpptr->bestAskVolume = 0;
 			retpptr->askTotalVolume = 0;
 		} else {
@@ -80,10 +80,12 @@ void ExchangeAgent::receiveMessage(const MessagePtr& msg) {
 			// 	return acc + cont.volume();
 			// });
 			retpptr->askTotalVolume = 0;
+
+			last_ask = bestSellLevel.price();
 		}
 
 		if (m_bookPtr->buyQueue().empty()) {
-			retpptr->bestBidPrice = 0;
+			retpptr->bestBidPrice = last_bid;
 			retpptr->bestBidVolume = 0;
 			retpptr->bidTotalVolume = 0;
 		} else {
@@ -95,6 +97,8 @@ void ExchangeAgent::receiveMessage(const MessagePtr& msg) {
 			// 	return acc + cont.volume();
 			// });
 			retpptr->bidTotalVolume = 0;
+
+			last_bid = bestBuyLevel.price();
 		}
 
 		if (msg->source == "L1_LOGGER")
